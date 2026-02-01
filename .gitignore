@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# browser session (puppeteer)
+.browser-session/
+
+# debug outputs
+debug/
+*.html
+*.png
