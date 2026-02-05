@@ -2,7 +2,8 @@
 
 import type { ForecastResult } from '@/lib/types';
 import { StatCard } from '@/components/ui/StatCard';
-import { BurnRateChart } from './BurnRateChart';
+import { MonthlySpendChart } from './MonthlySpendChart';
+import { MonthlyBurnRateChart } from './MonthlyBurnRateChart';
 import { formatCurrency, formatPercentage, formatDisplayDate } from '@/lib/utils/date-utils';
 
 interface ForecastDisplayProps {
@@ -110,8 +111,11 @@ export function ForecastDisplay({ forecast }: ForecastDisplayProps) {
         </p>
       </div>
 
-      {/* Monthly Burn Rate Chart */}
-      <BurnRateChart data={forecast.monthlyBurnRates} />
+      {/* Monthly Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <MonthlySpendChart data={forecast.monthlyBurnRates} />
+        <MonthlyBurnRateChart data={forecast.monthlyBurnRates} />
+      </div>
 
       {/* Monthly Breakdown Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">

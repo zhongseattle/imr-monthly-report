@@ -18,20 +18,15 @@ function calculateMonthsElapsed_OLD(testDate: Date): number {
 function calculateMonthsElapsed_NEW(testDate: Date): number {
   const currentMonth = testDate.getMonth() + 1; // 1-12 (January = 1)
   
-  // NEW LOGIC: Report is for PREVIOUS month
+  // NEW LOGIC: Report is for PREVIOUS month, Fiscal year = Calendar year
   let reportingMonth = currentMonth - 1;
   
   if (reportingMonth === 0) {
     reportingMonth = 12;
   }
   
-  if (reportingMonth === 1) {
-    return 12;
-  } else if (reportingMonth >= 2) {
-    return reportingMonth - 1;
-  }
-  
-  return 1;
+  // Calendar year: reporting month IS the fiscal months elapsed
+  return reportingMonth;
 }
 
 function getReportMonth_OLD(testDate: Date): string {
@@ -47,9 +42,8 @@ function getReportMonth_NEW(testDate: Date): string {
 function getFiscalMonthName(monthsElapsed: number): string {
   const fiscalMonths = [
     '', // placeholder for index 0
-    'February', 'March', 'April', 'May', 'June', 
-    'July', 'August', 'September', 'October', 
-    'November', 'December', 'January'
+    'January', 'February', 'March', 'April', 'May', 'June', 
+    'July', 'August', 'September', 'October', 'November', 'December'
   ];
   return fiscalMonths[monthsElapsed] || 'Unknown';
 }
@@ -96,13 +90,18 @@ console.log('══════════════════════�
 console.log('KEY INSIGHT:');
 console.log('════════════════════════════════════════════════════════════════');
 console.log('When run on Feb 6, 2026:');
-console.log('  • Report covers: January 2026 (fiscal month 12 of FY2026)');
+console.log('  • Report covers: January 2026 (fiscal month 1 of FY2026)');
+console.log('  • monthsElapsed: 1');
+console.log('  • Projected EOY = (YTD / 1) × 12 = YTD × 12');
+console.log();
+console.log('When run on Dec 6, 2026:');
+console.log('  • Report covers: November 2026 (fiscal month 11 of FY2026)');
+console.log('  • monthsElapsed: 11');
+console.log('  • Projected EOY = (YTD / 11) × 12');
+console.log();
+console.log('When run on Jan 6, 2027:');
+console.log('  • Report covers: December 2026 (fiscal month 12 of FY2026)');
 console.log('  • monthsElapsed: 12');
 console.log('  • This represents the FULL fiscal year data');
 console.log('  • Projected EOY = YTD (no projection needed)');
-console.log();
-console.log('When run on Mar 6, 2026:');
-console.log('  • Report covers: February 2026 (fiscal month 1 of FY2027)');
-console.log('  • monthsElapsed: 1');
-console.log('  • Projected EOY = (YTD / 1) × 12 = YTD × 12');
 console.log('════════════════════════════════════════════════════════════════\n');

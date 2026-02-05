@@ -520,31 +520,21 @@ function calculateMonthsElapsed(fiscalYear: number): number {
   // Calculate the reporting month (1-12)
   let reportingMonth = currentMonth - 1;
   
-  // Handle January edge case: if current is January, reporting month is December
+  // Handle January edge case: if current is January, reporting month is December of previous year
   if (reportingMonth === 0) {
     reportingMonth = 12;
   }
   
   // Calculate fiscal months elapsed for the REPORTING month
-  // Amazon FY: Feb=1, Mar=2, Apr=3, ..., Dec=11, Jan=12
+  // Calendar FY: Jan=1, Feb=2, Mar=3, ..., Dec=12
   // 
-  // Reporting month mapping to fiscal months elapsed:
-  // January (1) → 12 months (last month of FY)
-  // February (2) → 1 month (first month of FY)
-  // March (3) → 2 months
-  // ...
-  // December (12) → 11 months
+  // Since fiscal year = calendar year:
+  // - Reporting month IS the fiscal month
+  // - January report = 1 month elapsed (end of January)
+  // - February report = 2 months elapsed (end of February)
+  // - December report = 12 months elapsed (end of year)
   
-  if (reportingMonth === 1) {
-    // January is month 12 of fiscal year
-    return 12;
-  } else if (reportingMonth >= 2) {
-    // Feb-Dec: subtract 1 to get fiscal months elapsed
-    return reportingMonth - 1;
-  }
-  
-  // Should never reach here
-  return 1;
+  return reportingMonth;
 }
 
 /**
@@ -594,15 +584,13 @@ export async function scrapeCerebusComplete(
     // ===== CALCULATE METRICS =====
     console.log(`\n📈 Fleet ${fleetId}: Calculating forecast metrics...`);
     
-    // Determine current fiscal year
-    // FY starts Feb 1. If we're in Jan, we're still in previous FY. If Feb-Dec, we're in new FY.
+    // Determine current fiscal year (Calendar year: Jan 1 - Dec 31)
     const today = new Date();
     const currentMonth = today.getMonth() + 1; // 1-12 (January = 1)
     const currentYear = today.getFullYear();
     
-    // If January, we're still in previous fiscal year (e.g., Jan 2026 = FY2026)
-    // If Feb-Dec, we're in current fiscal year (e.g., Feb 2026 = FY2027)
-    const fiscalYear = currentMonth === 1 ? currentYear : currentYear + 1;
+    // Fiscal year is simply the calendar year
+    const fiscalYear = currentYear;
     
     const monthsElapsed = calculateMonthsElapsed(fiscalYear);
     const monthsRemaining = 12 - monthsElapsed;

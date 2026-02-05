@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ForecastDisplay } from '@/components/dashboard/ForecastDisplay';
-import { getFleetForecast } from '@/lib/services/cerebus-api';
+import { FLEET_HIERARCHY } from '@/lib/config/fleet-hierarchy';
 import type { ForecastResult } from '@/lib/types';
 
 export default function Home() {
@@ -13,7 +13,7 @@ export default function Home() {
 
   const handleFetchForecast = async () => {
     if (!fleetId.trim()) {
-      setError('Please enter a fleet ID');
+      setError('Please select a fleet');
       return;
     }
 
@@ -21,19 +21,26 @@ export default function Home() {
     setError(null);
 
     try {
-      const result = await getFleetForecast(fleetId);
+      // Call our API route which reads from scraped reports
+      const response = await fetch(`/api/fleet?id=${fleetId}`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch forecast');
+      }
+      
+      const result = await response.json();
+      
+      // Convert date strings back to Date objects
+      result.fiscalYearStart = new Date(result.fiscalYearStart);
+      result.fiscalYearEnd = new Date(result.fiscalYearEnd);
+      
       setForecast(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch forecast');
       setForecast(null);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleFetchForecast();
     }
   };
 
@@ -55,22 +62,46 @@ export default function Home() {
         {/* Fleet Input Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-200 dark:border-gray-700">
           <label htmlFor="fleetId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Fleet ID
+            Select Fleet
           </label>
           <div className="flex gap-4">
-            <input
+            <select
               id="fleetId"
-              type="text"
               value={fleetId}
               onChange={(e) => setFleetId(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Enter fleet ID (e.g., 8304669)"
               className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               disabled={loading}
-            />
+            >
+              <option value="">-- Select a Fleet --</option>
+              
+              {/* Parent Fleets */}
+              {FLEET_HIERARCHY.filter(f => f.type === 'parent').map(fleet => (
+                <option key={fleet.id} value={fleet.id}>
+                  {fleet.id} - {fleet.name} ({fleet.budget})
+                </option>
+              ))}
+              
+              {/* Child Fleets */}
+              {FLEET_HIERARCHY.filter(f => f.type === 'parent').map(parent => {
+                const children = FLEET_HIERARCHY.filter(f => f.parentId === parent.id);
+                return children.map(fleet => (
+                  <option key={fleet.id} value={fleet.id}>
+                    &nbsp;&nbsp;↳ {fleet.id} - {fleet.name} ({fleet.budget})
+                  </option>
+                ));
+              })}
+              
+              {/* Independent Fleets */}
+              {FLEET_HIERARCHY.filter(f => f.type === 'independent').map(fleet => (
+                <option key={fleet.id} value={fleet.id}>
+                  {fleet.id} - {fleet.name} ({fleet.budget})
+                </option>
+              ))}
+            </select>
+            
             <button
               onClick={handleFetchForecast}
-              disabled={loading}
+              disabled={loading || !fleetId}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? (
@@ -94,8 +125,13 @@ export default function Home() {
           )}
 
           <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-            <p>💡 Sample Fleet ID: 8304669</p>
-            <p className="mt-1">Note: Currently using mock data. Replace with actual Cerebus API integration for production.</p>
+            <p>💡 Fleet Hierarchy:</p>
+            <ul className="mt-1 ml-4 space-y-1">
+              <li>• <strong>8304669</strong> - Parent Fleet (Planning Automation And Optimization)</li>
+              <li className="ml-4">↳ 8305082, 8304674, 10089347, 8967127 - Child Fleets</li>
+              <li>• <strong>3046715</strong> - Independent Fleet (IPC - Capacity)</li>
+            </ul>
+            <p className="mt-2">Displays data from the most recent scraped report. Run <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">npm run scrape-monthly-report</code> to update.</p>
           </div>
         </div>
 
