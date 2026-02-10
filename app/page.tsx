@@ -129,7 +129,6 @@ export default function Home() {
             <ul className="mt-1 ml-4 space-y-1">
               <li>• <strong>8304669</strong> - Parent Fleet (Planning Automation And Optimization)</li>
               <li className="ml-4">↳ 8305082, 8304674, 10089347, 8967127 - Child Fleets</li>
-              <li>• <strong>3046715</strong> - Independent Fleet (IPC - Capacity)</li>
             </ul>
             <p className="mt-2">Displays data from the most recent scraped report. Run <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">npm run scrape-monthly-report</code> to update.</p>
           </div>

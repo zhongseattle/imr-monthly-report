@@ -40,12 +40,6 @@ export const FLEET_HIERARCHY: FleetConfig[] = [
     type: 'child',
     parentId: '8304669',
     budget: '$32.9K'
-  },
-  {
-    id: '3046715',
-    name: '(F6) IPC - Capacity',
-    type: 'independent',
-    budget: '$25.06M'
   }
 ];
 
